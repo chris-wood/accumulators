@@ -51,7 +51,7 @@ public class GeneralPaillier {
     public BigInteger factorial(int k) {
         BigInteger f = BigInteger.ONE;
         for (int i = 1; i <= k; i++) {
-            //
+            f = f.multiply(new BigInteger("" + k));
         }
         return f;
     }
