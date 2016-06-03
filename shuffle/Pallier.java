@@ -1,6 +1,8 @@
 import java.math.BigInteger;
-import java.util.List;
 import java.security.SecureRandom;
+import java.util.List;
+import java.util.ArrayList;
+import java.math.BigInteger;
 
 public class Pallier {
 
@@ -13,7 +15,8 @@ public class Pallier {
     BigInteger g;
 
     public Pallier(int bitLength) {
-        CompositeModulus mod = PrimeGenerator.generateCompositeModulus(bitLength - 1);
+        PrimeGenerator generator = new PrimeGenerator();
+        CompositeModulus mod = generator.generateCompositeModulus(bitLength - 1);
         p = mod.factors.get(0);
         q = mod.factors.get(1);
         N = mod.composite;
@@ -104,5 +107,47 @@ public class Pallier {
         BigInteger m3m = p.decrypt(c3);
         System.out.println("Homomorphic decryption: " + m3m);
         System.out.println("Plaintext result:       " + m1.add(m2).mod(p.N));
+    }
+
+    class CompositeModulus {
+
+        List<BigInteger> factors;
+        BigInteger composite;
+
+        public CompositeModulus() {
+            composite = BigInteger.ONE;
+            factors = new ArrayList<BigInteger>();
+        }
+
+        public void addFactor(BigInteger x) {
+            composite = composite.multiply(x);
+            factors.add(x);
+        }
+    }
+
+    class PrimeGenerator {
+        public boolean areEqualLength(BigInteger p, BigInteger q) {
+            BigInteger pq = p.multiply(q);
+            BigInteger pqphi = p.subtract(BigInteger.ONE).multiply(q.subtract(BigInteger.ONE));
+
+            return pq.gcd(pqphi).equals(BigInteger.ONE);
+        }
+
+        public CompositeModulus generateCompositeModulus(int n) {
+            SecureRandom rng = new SecureRandom();
+            BigInteger p;
+            BigInteger q;
+
+            do {
+                p = new BigInteger(n, 1, rng);
+                q = new BigInteger(n, 1, rng);
+            } while(!areEqualLength(p, q));
+
+            CompositeModulus mod = new CompositeModulus();
+            mod.addFactor(p);
+            mod.addFactor(q);
+
+            return mod;
+        }
     }
 }
